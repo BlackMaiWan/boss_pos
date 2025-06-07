@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.table-btn {
+ 
+  position: relative;
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #666;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  width: 25%;
+  height: 175;
+  margin: 0px 10px
+}
+
+.sub-buttons-container {
+  position: absolute;
+  top: 0; /* Align with the top of the main button */
+  left: 0; /* Align with the left of the main button */
+  display: none; /* Initially hidden */
+  flex-direction: column;
+  align-items: center;
+  width: 100%; /* Cover the main button */
+  border-radius: 5px;
+  overflow: hidden; /* Prevent sub-buttons from showing outside */
+}
+
+.table-btn:hover .sub-buttons-container {
+  display: flex; /* Show sub-buttons on hover */
+}
+
+.sub-button {
+  padding: 10px 20px;
+  background-color: grey;
+  color: white;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+  border-radius: 0; /* Remove individual button borders */
+}
+
+.sub-button:hover {
+  background-color: green;
+}
+
+/* Style for the sub-buttons to appear correctly on top */
+.table-btn:hover::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.1); /* Optional overlay */
+  z-index: 1; /* Ensure overlay is above the main button text */
+  border-radius: 5px;
+}
+
+.sub-buttons-container .sub-button {
+  z-index: 2; /* Ensure sub-buttons are above the overlay */
+}
+
+.main_container{
+  background-color:whitesmoke;
+  height: 100vh;
+  padding-left: 18rem;
+  padding-top: 2.5rem;
+}
