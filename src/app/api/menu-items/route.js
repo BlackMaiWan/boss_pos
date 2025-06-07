@@ -20,13 +20,13 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     await connectMongoDB();
-    const body = await request.json(); // รับข้อมูล JSON จาก Request body
+    const body = await request.json();
 
     // สร้าง MenuItem ใหม่จากข้อมูลที่ได้รับ
     const newMenuItem = new MenuItem(body);
     const savedMenuItem = await newMenuItem.save(); // บันทึกเข้า MongoDB
 
-    return NextResponse.json(savedMenuItem, { status: 201 }); // 201 Created
+    return NextResponse.json(savedMenuItem, { status: 201 });
   } catch (error) {
     console.error('Error creating menu item:', error);
     if (error.code === 11000) { // MongoDB duplicate key error (สำหรับ unique: true)

@@ -21,10 +21,9 @@ const tableSchema = new Schema(
       ref: "Order",
       default: null,
     },
-    // อาจเพิ่ม field อื่นๆ เช่น capacity, section, etc.
   },
   { timestamps: true }
-); // เพิ่ม createdAt และ updatedAt
+);
 
 const Table = models.Table || model("Table", tableSchema);
 

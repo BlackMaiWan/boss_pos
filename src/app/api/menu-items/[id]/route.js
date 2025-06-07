@@ -28,7 +28,7 @@ export async function PUT(request, { params }) {
     await connectMongoDB();
     const body = await request.json();
 
-    const updatedMenuItem = await MenuItem.findByIdAndUpdate(id, body, { new: true }); // { new: true } คืนค่า Document ที่อัปเดตแล้ว
+    const updatedMenuItem = await MenuItem.findByIdAndUpdate(id, body, { new: true });
 
     if (!updatedMenuItem) {
       return NextResponse.json({ message: 'Menu item not found' }, { status: 404 });

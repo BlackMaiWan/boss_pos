@@ -3,12 +3,10 @@ import { NextResponse } from 'next/server';
 import { connectMongoDB } from '../../../../../../lib/mongodb';
 import MenuItem from '../../../../../../models/MenuItem';
 
-// PUT handler สำหรับเพิ่มสต็อก
-export async function PUT(request, context) { // ใช้ context แทน params
-  const { id } = context.params; // ดึง id ของ MenuItem จาก URL
-  const { quantity } = await request.json(); // ดึงจำนวนที่จะเพิ่มจาก body
+export async function PUT(request, context) {
+  const { id } = context.params;
+  const { quantity } = await request.json();
 
-  // ตรวจสอบว่า quantity เป็นบวก
   if (typeof quantity !== 'number' || quantity <= 0) {
     return NextResponse.json({ message: 'Quantity must be a positive number' }, { status: 400 });
   }
@@ -19,20 +17,19 @@ export async function PUT(request, context) { // ใช้ context แทน par
     const updatedMenuItem = await MenuItem.findOneAndUpdate(
       { _id: id },
       {
-        $inc: { stock: quantity }, // เพิ่มสต็อกตาม quantity
+        $inc: { stock: quantity },
       },
-      { new: true } // คืนค่า Document ที่อัปเดตแล้ว
+      { new: true }
     );
 
     if (!updatedMenuItem) {
       return NextResponse.json({ message: 'Menu item not found' }, { status: 404 });
     }
 
-    // หลังจากที่สต็อกถูกเพิ่มแล้ว ให้ตรวจสอบและอัปเดต isAvailable
-    // ถ้าสต็อกมีค่า > 0 สถานะควรเป็นพร้อมขาย
+    // ตรวจสอบและอัปเดต isAvailable ถ้าสต็อกมีค่า > 0 สถานะควรเป็นพร้อมขาย
     if (updatedMenuItem.stock > 0 && !updatedMenuItem.isAvailable) {
       updatedMenuItem.isAvailable = true;
-      await updatedMenuItem.save(); // บันทึกการเปลี่ยนแปลง isAvailable
+      await updatedMenuItem.save();
     }
 
     return NextResponse.json(updatedMenuItem, { status: 200 });

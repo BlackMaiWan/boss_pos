@@ -1,8 +1,8 @@
 // app/api/tables/[tableNumber]/open/route.js
 import { NextResponse } from "next/server";
-import { connectMongoDB } from "../../../../../../lib/mongodb"; // นำเข้าฟังก์ชันเชื่อมต่อ
-import Table from "../../../../../../models/Table"; // <--- นำเข้า Mongoose Table Model
-import Order from "../../../../../../models/Order"; // <--- นำเข้า Mongoose Order Model
+import { connectMongoDB } from "../../../../../../lib/mongodb";
+import Table from "../../../../../../models/Table";
+import Order from "../../../../../../models/Order";
 
 export async function POST(request, context) {
   const { tableNumber } = context.params;

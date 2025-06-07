@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import { connectMongoDB } from '../../../../../../lib/mongodb';
 import Order from '../../../../../../models/Order';
-import Table from '../../../../../../models/Table'; // ต้องใช้ Table เพื่ออัปเดตสถานะโต๊ะ
+import Table from '../../../../../../models/Table';
 
 export async function PUT(request, context) {
   const { orderId } = context.params;
@@ -21,12 +21,11 @@ export async function PUT(request, context) {
     }
 
     // อัปเดตสถานะ Order
-    order.status = 'paid'; // หรือ 'completed'
+    order.status = 'paid';
     order.closedAt = new Date();
-    // อาจเพิ่ม paymentMethod, transactionId จาก request body ได้
     await order.save();
 
-    // อัปเดตสถานะโต๊ะให้เป็น 'available' และล้าง currentOrderId
+    // อัปเดตสถานะโต๊ะให้เป็น 'available' และเคลียร์ currentOrderId
     const tableNumber = order.tableNumber;
     await Table.updateOne(
       { tableNumber: tableNumber },

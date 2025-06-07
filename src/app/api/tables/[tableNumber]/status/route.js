@@ -5,11 +5,11 @@ import Table from '../../../../../../models/Table';
 
 // PUT handler: อัปเดตสถานะของโต๊ะ
 export async function PUT(request, { params }) {
-  const { tableNumber } = params; // ดึง tableNumber จาก URL
-  const { status } = await request.json(); // ดึงสถานะใหม่จาก body
+  const { tableNumber } = params;
+  const { status } = await request.json();
 
   // ตรวจสอบว่า status ที่ส่งมาถูกต้องตาม enum ที่กำหนดใน Table Model
-  const validStatuses = ['available', 'in-use', 'cleaning', 'maintenance']; // เพิ่มสถานะอื่นๆ ถ้ามี
+  const validStatuses = ['available', 'in-use', 'cleaning', 'maintenance'];
   if (!validStatuses.includes(status)) {
     return NextResponse.json({ message: 'Invalid status provided' }, { status: 400 });
   }
@@ -18,21 +18,18 @@ export async function PUT(request, { params }) {
     await connectMongoDB();
 
     // ค้นหาและอัปเดตสถานะของโต๊ะ
-    // ถ้าสถานะเป็น 'available' ก็ควรล้าง currentOrderId ด้วย
     const updateData = { status: status };
     if (status === 'available') {
-        updateData.$unset = { currentOrderId: "" }; // ลบ field currentOrderId ออกไป
+        updateData.$unset = { currentOrderId: "" }; //เคลียร์ฟิลด์ currebtOrderId
     } else {
-        // หากต้องการตั้งค่า currentOrderId เมื่อเป็น in-use จาก API นี้ ให้ใส่เพิ่ม
-        // แต่ใน flow ปัจจุบัน currentOrderId ถูกตั้งเมื่อ 'open' table
-        // updateData.$set = { currentOrderId: someOrderId };
+
     }
 
 
     const updatedTable = await Table.findOneAndUpdate(
       { tableNumber: parseInt(tableNumber) },
       updateData,
-      { new: true } // คืนค่า Document ที่อัปเดตแล้ว
+      { new: true }
     );
 
     if (!updatedTable) {

@@ -21,7 +21,7 @@ const orderSchema = new Schema({
       notes: String, // เช่น "ไม่ใส่ผักชี"
     }
   ],
-  totalAmount: { // <--- เพิ่ม field นี้สำหรับยอดรวม
+  totalAmount: {
     type: Number,
     default: 0,
     min: 0,
@@ -34,9 +34,6 @@ const orderSchema = new Schema({
     type: Date,
     default: null,
   },
-  // openedBy: { type: Schema.Types.ObjectId, ref: 'User' },
-  // paymentMethod: String,
-  // transactionId: String,
 }, { timestamps: true });
 
 const Order = models.Order || model('Order', orderSchema);
