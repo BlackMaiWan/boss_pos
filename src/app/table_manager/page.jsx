@@ -1,7 +1,7 @@
 // app/table-manager/page.jsx
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Table from '../components/table';
 import Sidebar from '../components/sidebar';
@@ -13,181 +13,107 @@ const TableManager = () => {
     const [tables, setTables] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [newTableNumber, setNewTableNumber] = useState('');
+    const [newTableCapacity, setNewTableCapacity] = useState(4); // State สำหรับความจุโต๊ะใหม่
 
-    useEffect(() => {
-        const fetchTables = async () => {
-            setLoading(true);
-            setError(null);
-            try {
-                const response = await fetch('/api/tables'); // <--- เรียก API ดึงข้อมูลโต๊ะทั้งหมด
-                if (!response.ok) {
-                    throw new Error('Failed to fetch tables');
-                }
-                const data = await response.json();
-
-                const processedTables = Array.from({ length: 9 }, (_, i) => {
-                    const tableNumber = i + 1;
-                    const dbTable = data.find(t => t.tableNumber === tableNumber);
-
-                    let orderIdValue = null;
-                    if (dbTable && dbTable.currentOrderId) {
-                        // ตรวจสอบว่าเป็น Object หรือ String
-                        if (typeof dbTable.currentOrderId === 'object' && dbTable.currentOrderId._id) {
-                            // ถ้าถูก populate มาเป็น object
-                            orderIdValue = dbTable.currentOrderId._id.toString();
-                        } else {
-                            // ถ้ามาเป็น string หรือ ObjectId.toString() แล้ว
-                            orderIdValue = dbTable.currentOrderId.toString();
-                        }
-                    }
-                    return {
-                        tableNumber: tableNumber,
-                        status: dbTable ? dbTable.status : 'available',
-                        currentOrderId: orderIdValue,
-                    };
-                });
-
-                setTables(processedTables);
-            } catch (err) {
-                console.error('Error fetching tables:', err);
-                setError('ไม่สามารถโหลดสถานะโต๊ะได้ กรุณาลองใหม่');
-            } finally {
-                setLoading(false);
+    const fetchTables = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await fetch('/api/tables');
+            if (!response.ok) {
+                throw new Error('Failed to fetch tables');
             }
-        };
+            const data = await response.json();
 
-        fetchTables();
+            const processedTables = data.map(dbTable => {
+                let orderIdValue = null;
+                if (dbTable && dbTable.currentOrderId) {
+                    if (typeof dbTable.currentOrderId === 'object' && dbTable.currentOrderId._id) {
+                        orderIdValue = dbTable.currentOrderId._id.toString();
+                    } else {
+                        orderIdValue = dbTable.currentOrderId.toString();
+                    }
+                }
+                return {
+                    _id: dbTable._id,
+                    tableNumber: dbTable.tableNumber,
+                    status: dbTable.status,
+                    currentOrderId: orderIdValue,
+                    capacity: dbTable.capacity,
+                };
+            });
+
+            processedTables.sort((a, b) => a.tableNumber - b.tableNumber);
+            setTables(processedTables);
+        } catch (err) {
+            console.error('Error fetching tables:', err);
+            setError('ไม่สามารถโหลดสถานะโต๊ะได้ กรุณาลองใหม่');
+        } finally {
+            setLoading(false);
+        }
     }, []);
 
-    const handleOpenTable = async (tableNumber) => {
+    useEffect(() => {
+        fetchTables();
+
+    }, [fetchTables]);
+
+    // --- ฟังก์ชันเพิ่มโต๊ะ ---
+    const handleAddTable = async () => {
+        // 1. หาหมายเลขโต๊ะที่มากที่สุดในปัจจุบัน
+        const maxTableNumber = tables.length > 0 ? Math.max(...tables.map(t => t.tableNumber)) : 0;
+        const nextTableNumber = maxTableNumber + 1;
+
         try {
-            const response = await fetch(`/api/tables/${tableNumber}/open`, {
+            const response = await fetch('/api/tables', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
+                // 2. ส่ง nextTableNumber ไปยัง API
+                body: JSON.stringify({ tableNumber: nextTableNumber }),
             });
-
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || `Failed to open table ${tableNumber}`);
+                throw new Error(errorData.message || 'Failed to add table');
             }
-
-            const data = await response.json();
-            if (!data.orderId) { // <--- ตรวจสอบว่ามี orderId กลับมา
-                throw new Error('No orderId received from backend');
-            }
-
-            setTables((prevTables) =>
-                prevTables.map((table) =>
-                    table.tableNumber === tableNumber
-                        ? {
-                            ...table,
-                            status: 'in-use',
-                            currentOrderId: data.orderId, // <-- เก็บ orderId ที่ได้จาก Backend
-                        }
-                        : table
-                )
-            );
-
-            alert(`โต๊ะที่ ${tableNumber} เปิดแล้ว! Order ID: ${data.orderId}`);
-            router.push(`/order/${data.orderId}`);
-
-        } catch (error) {
-            console.error('Error opening table:', error);
-            alert(`เกิดข้อผิดพลาดในการเปิดโต๊ะที่ ${tableNumber}: ${error.message}`);
+            // 3. ถ้าเพิ่มสำเร็จ ให้ดึงข้อมูลโต๊ะใหม่ทั้งหมด
+            await fetchTables();
+            setError(null);
+        } catch (err) {
+            console.error('Error adding table:', err);
+            setError(`ไม่สามารถเพิ่มโต๊ะได้: ${err.message}`);
         }
     };
 
-    const handleOrderFood = (tableNumber) => {
-        const table = tables.find(t => t.tableNumber === tableNumber);
-        if (table && table.currentOrderId) {
-            router.push(`/order/${table.currentOrderId}`); // <--- ส่ง orderId ไปยังหน้าสั่งอาหาร
-        } else {
-            alert('โต๊ะยังไม่มี Order ID หรือยังไม่ได้เปิด กรุณาเปิดโต๊ะก่อน');
-        }
-    };
-
-    const handleViewOrder = (tableNumber) => {
-        const table = tables.find(t => t.tableNumber === tableNumber);
-        if (table && table.currentOrderId) {
-            router.push(`/order/${table.currentOrderId}?viewOnly=true`); // อาจจะเพิ่ม query param สำหรับดูอย่างเดียว
-        } else {
-            alert('โต๊ะยังไม่มี Order ID ที่ใช้งานอยู่');
-        }
-    };
-
-    const handleCheckout = async (tableNumber) => {
-        const table = tables.find(t => t.tableNumber === tableNumber);
-        if (!table || !table.currentOrderId) {
-            alert('โต๊ะยังไม่มี Order ID ที่ใช้งานอยู่');
+    // --- ฟังก์ชันลบโต๊ะ ---
+    const handleDeleteTable = async () => {
+        // 1. ตรวจสอบว่ามีโต๊ะให้ลบหรือไม่
+        if (tables.length === 0) {
+            setError('ไม่มีโต๊ะให้ลบ');
             return;
         }
 
-        if (!confirm(`ต้องการชำระเงินสำหรับโต๊ะที่ ${tableNumber} (Order ID: ${table.currentOrderId}) ใช่หรือไม่?`)) {
+        // 2. หาหมายเลขโต๊ะที่มากที่สุด
+        const tableNumberToDelete = Math.max(...tables.map(t => t.tableNumber));
+
+        if (!confirm(`คุณแน่ใจหรือไม่ที่จะลบโต๊ะ ${tableNumberToDelete} ?`)) {
             return;
         }
 
         try {
-            const response = await fetch(`/api/orders/${table.currentOrderId}/checkout`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+            const response = await fetch(`/api/tables?tableNumber=${tableNumberToDelete}`, {
+                method: 'DELETE',
             });
-
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to checkout table');
+                throw new Error(errorData.message || 'Failed to delete table');
             }
-
-            setTables((prevTables) =>
-                prevTables.map((t) =>
-                    t.tableNumber === tableNumber
-                        ? { ...t, status: 'available', currentOrderId: null }
-                        : t
-                )
-            );
-            alert(`โต๊ะที่ ${tableNumber} ชำระเงินเรียบร้อยแล้ว!`);
-        } catch (error) {
-            console.error('Error during checkout:', error);
-            alert(`เกิดข้อผิดพลาดในการชำระเงินโต๊ะที่ ${tableNumber}: ${error.message}`);
-        }
-    };
-
-    const onCloseTable = async (tableNumber) => {
-        const table = tables.find(t => t.tableNumber === tableNumber);
-        if (table && table.currentOrderId && table.status === 'in-use') {
-            alert('กรุณาชำระเงินก่อนปิดโต๊ะ');
-            return;
-        }
-
-        if (!confirm(`คุณแน่ใจหรือไม่ที่จะปิดโต๊ะที่ ${tableNumber}?`)) {
-            return;
-        }
-
-        try {
-            // หากไม่มี Order ที่เกี่ยวข้อง ก็แค่เปลี่ยนสถานะโต๊ะใน DB
-            const response = await fetch(`/api/tables/${tableNumber}/status`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: 'available' }),
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to close table');
-            }
-
-            setTables((prevTables) =>
-                prevTables.map((t) =>
-                    t.tableNumber === tableNumber
-                        ? { ...t, status: 'available', currentOrderId: null }
-                        : t
-                )
-            );
-            alert(`โต๊ะที่ ${tableNumber} ถูกปิดแล้ว`);
-        } catch (error) {
-            console.error('Error closing table:', error);
-            alert(`เกิดข้อผิดพลาดในการปิดโต๊ะที่ ${tableNumber}: ${error.message}`);
+            // 3. ถ้าลบสำเร็จ ให้ดึงข้อมูลโต๊ะใหม่ทั้งหมด
+            await fetchTables();
+            setError(null);
+        } catch (err) {
+            console.error('Error deleting table:', err);
+            setError(`ไม่สามารถลบโต๊ะได้: ${err.message}`);
         }
     };
 
@@ -211,22 +137,31 @@ const TableManager = () => {
         <main>
             <Sidebar session={session} />
             <div className="main_container">
-                <h1 className="text-4xl font-bold text-center mb-10 text-gray-800">Table Management</h1>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
-                    {tables.map((table) => (
-                        <Table
-                            key={table.tableNumber}
-                            tableNumber={table.tableNumber}
-                            initialStatus={table.status}
-                            initialOrderId={table.currentOrderId}
-                            onOpenTable={handleOpenTable}
-                            onOrderFood={handleOrderFood}
-                            onViewOrder={handleViewOrder}
-                            onCheckout={handleCheckout}
-                            onCloseTable={onCloseTable}
-                        />
-                    ))}
+                <div>
+                    {/* UI สำหรับเพิ่มโต๊ะ - ปรับเปลี่ยนให้ง่ายขึ้น */}
+                    <button
+                        onClick={handleAddTable}
+                        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                    >
+                        เพิ่มโต๊ะ
+                    </button>
+
+                    <button
+                        onClick={handleDeleteTable}
+                        className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                    >
+                        ลบโต๊ะ
+                    </button>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                        {tables.map((table) => (
+                            <Table
+                                key={table.tableNumber}
+                                tableNumber={table.tableNumber}
+                            />
+                        ))}
+                    </div>
                 </div>
+
             </div>
         </main>
     );

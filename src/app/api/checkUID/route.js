@@ -1,50 +1,18 @@
-import NextAuth from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
-import { connectMongoDB } from "../../../../../lib/mongodb";
-import User from "../../../../../models/user";
-import bcrypt from 'bcryptjs'
+import { NextResponse } from 'next/server'
+import { connectMongoDB } from '../../../../lib/mongodb';
+import User from '../../../../models/user';
 
-const authOptions = {
-    providers: [
-        CredentialsProvider({
-            name: "credentials",
-            credentials: {},
-            async authorize(credentials, req) {
+export async function POST(req) {
+    try {
 
-                const {uid, password} = credentials;
+        await connectMongoDB();
+        const { uid } = await req.json();
+        const user = await User.findOne({ uid }).select("_id");
+        console.log("User: ", user)
 
-                try {
-                    
-                    await connectMongoDB();
-                    const user = await User.findOne({uid});
-                    
-                    if (!user) {
-                        return null;
-                    }
+        return NextResponse.json({ user })
 
-                    const passwordMatch = await bcrypt.compare(password, user.password);
-
-                    if(!passwordMatch) {
-                        return null;
-                    }
-
-                    return user;
-
-                } catch (error) {
-                    console.log(error);
-                }
-
-            }
-        })
-    ],
-    session: {
-        strategy: "jwt",
-    },
-    secret: process.env.NEXTAUTH_SECRET,
-    pages: {
-        signIn: "/login"
+    } catch(error) {
+        return NextResponse.json({ message: "An error occured while registering the user." }, { status: 500 })
     }
 }
-
-const handler = NextAuth(authOptions);
-export { handler as GET, handler as POST }

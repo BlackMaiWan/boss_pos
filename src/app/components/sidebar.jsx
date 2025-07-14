@@ -24,8 +24,13 @@ const Sidebar = ({ session }) => {
             ) : (
               <>
                 <div className="mt-10">
+                  <a href="tables" className="text-white hover:text-gray-300">
+                    Table
+                  </a>
+                </div>
+                <div className="mt-10">
                   <a href="table_manager" className="text-white hover:text-gray-300">
-                    Tables
+                    Table_manager
                   </a>
                 </div>
                 {/* <div className="mt-10">
@@ -50,7 +55,7 @@ const Sidebar = ({ session }) => {
                 </div>
                 <div className="mt-10">
                   <a href="report" className="text-white hover:text-gray-300">
-                    ฝากเหล้า
+                    customers
                   </a>
                 </div>
                 <div className="mt-10">

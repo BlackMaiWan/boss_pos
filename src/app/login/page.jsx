@@ -46,7 +46,7 @@ function LoginPage() {
                 <div className='container mx-auto py-10 justify-items-center'>
                     <h1>Login</h1>
                     <hr className='my-3' />
-                    <form onSubmit={handleSubmit} className='justify-items-center'>
+                    <form onSubmit={handleSubmit}>
 
                         {error && (
                             <div className='bg-red-500 w-fit text-sm text-white py-1 px-3 rounded-md mt-2'>
@@ -59,8 +59,8 @@ function LoginPage() {
                         <button type='submit' className='bg-green-500 p-2 m-3 rounded-md text-white'>Sign In</button>
                     </form>
                     {/* need config!!! */}
-                    <Link className='text-gray-500 hover:underline' href="/">Forgot Password?</Link><br/>
-                    <Link className='text-gray-500 hover:underline' href="register">Register</Link>
+                    {/* <Link className='text-gray-500 hover:underline' href="/">Forgot Password?</Link><br/>
+                    <Link className='text-gray-500 hover:underline' href="register">Register</Link> */}
                 </div>
             </div>
         </div>
