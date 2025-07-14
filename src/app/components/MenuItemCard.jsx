@@ -43,7 +43,7 @@ const MenuItemCard = ({ menuItem, onEdit, onDelete, onAddStock, showActions = tr
                         แก้ไข
                     </button>
                     <button
-                        onClick={() => onAddStock(menuItem._id, menuItem.stock)}
+                        onClick={() => onAddStock(menuItem._id, menuItem.name, menuItem.stock)}
                         className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded text-sm"
                     >
                         เพิ่มสต็อก

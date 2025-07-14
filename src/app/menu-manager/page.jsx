@@ -104,9 +104,8 @@ const MenuManagerPage = () => {
         setEditingMenuItem(null);
     };
 
-    // <--- เพิ่มฟังก์ชันนี้สำหรับเพิ่ม Stock
-    const handleAddStock = async (id, currentStock) => {
-        const quantityStr = prompt(`เพิ่มสต็อกสำหรับ ${id} (ปัจจุบัน: ${currentStock}) จำนวนเท่าไหร่?`);
+    const handleAddStock = async (id, name, currentStock) => {
+        const quantityStr = prompt(`เพิ่มสต็อกสำหรับ ${name} (ปัจจุบัน: ${currentStock}) จำนวนเท่าไหร่?`);
         if (!quantityStr) return;
 
         const quantity = parseInt(quantityStr, 10);

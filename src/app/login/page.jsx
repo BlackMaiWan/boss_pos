@@ -1,9 +1,8 @@
 "use client"
 
 import React, { useState } from 'react'
-import Link from 'next/link'
 import { signIn } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { redirect } from 'next/navigation';
 import { useSession } from 'next-auth/react'
 import Sidebar from '../components/sidebar'
 
@@ -13,10 +12,9 @@ function LoginPage() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
 
-    const router = useRouter();
 
     const { data: session } = useSession();
-    if (session) router.replace("welcome")
+    if (session) redirect("/welcome")
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -31,7 +29,7 @@ function LoginPage() {
                 return;
             }
 
-            router.replace("welcome")
+            redirect("/welcome")
         } catch (error) {
             console.log(error)
         }
