@@ -141,7 +141,7 @@ const MenuManagerPage = () => {
     return (
         <main>
             <Sidebar session={session} />
-            <div className="min-h-screen bg-gray-100 p-8">
+            <div className="main_container">
                 <h1 className="text-4xl font-bold text-center mb-8 text-gray-800">จัดการรายการอาหาร</h1>
 
                 <div className="max-w-4xl mx-auto mb-6 flex justify-end">

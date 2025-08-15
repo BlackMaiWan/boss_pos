@@ -54,13 +54,13 @@ const Sidebar = ({ session }) => {
                   </a>
                 </div>
                 <div className="mt-10">
-                  <a href="report" className="text-white hover:text-gray-300">
+                  <a href="customers" className="text-white hover:text-gray-300">
                     customers
                   </a>
                 </div>
                 <div className="mt-10">
-                  <a href="report" className="text-white hover:text-gray-300">
-                    ticket
+                  <a href="tickets" className="text-white hover:text-gray-300">
+                    tickets
                   </a>
                 </div>
               </>
