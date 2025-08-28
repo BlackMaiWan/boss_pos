@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import TicketFormModal from './_components/TicketFormModal'; // เราจะสร้างไฟล์นี้ในขั้นตอนถัดไป
-import SellTicketModal from './_components/SellTicketModal'; // เราจะสร้างไฟล์นี้ในขั้นตอนถัดไป
+import TicketFormModal from './_components/TicketFormModal';
+import SellTicketModal from './_components/SellTicketModal';
 import Sidebar from '../components/sidebar';
 
 const TicketsPage = () => {

@@ -42,8 +42,8 @@ const AddCustomerWithDepositModal = ({ onClose, onSuccess }) => {
             }
 
             alert('เพิ่มลูกค้าและฝากเครื่องดื่มสำเร็จ');
-            onSuccess(); // ดึงข้อมูลลูกค้าใหม่
-            onClose(); // ปิด Modal
+            onSuccess();
+            onClose();
         } catch (err) {
             console.error('Error adding customer:', err);
             setError(err.message);
@@ -52,7 +52,6 @@ const AddCustomerWithDepositModal = ({ onClose, onSuccess }) => {
         }
     };
 
-    // ... ส่วน UI เหมือนเดิม
     return (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center">
             <div className="bg-white p-6 rounded-lg shadow-xl w-96">

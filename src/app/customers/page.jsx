@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import AddCustomerWithDepositModal from './_components/AddCustomerWithDepositModal'; // เราจะสร้างไฟล์นี้ในขั้นตอนถัดไป
-import AddDepositModal from './_components/AddDepositModal'; // เราจะสร้างไฟล์นี้ในขั้นตอนถัดไป
+import AddCustomerWithDepositModal from './_components/AddCustomerWithDepositModal';
+import AddDepositModal from './_components/AddDepositModal';
 import Sidebar from '../components/sidebar';
 
 const CustomersPage = () => {

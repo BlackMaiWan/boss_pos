@@ -2,16 +2,16 @@ import { connectMongoDB } from "../../../../../lib/mongodb";
 import User from "../../../../../models/user";
 import bcrypt from 'bcryptjs';
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "../../../api/auth/[...nextauth]/route"; // *** แก้ไข path ให้ถูกต้อง ***
+import { authOptions } from "../../../api/auth/[...nextauth]/route";
 
 export async function POST(req) {
-  // ตรวจสอบ Method ว่าเป็น POST หรือไม่
+
   if (req.method !== 'POST') {
     return new Response(JSON.stringify({ message: 'Method Not Allowed' }), { status: 405 });
   }
 
   try {
-    // 1. ตรวจสอบ Session และ Role ของผู้ใช้ที่เรียกใช้ API
+
     const session = await getServerSession(authOptions);
 
     if (!session || !session.user || (session.user.role !== 'Owner' && session.user.role !== 'Admin')) {

@@ -28,8 +28,8 @@ const AddDepositModal = ({ customer, onClose, onSuccess }) => {
       }
 
       alert('ฝากเครื่องดื่มสำเร็จ');
-      onSuccess(); // ดึงข้อมูลลูกค้าใหม่เพื่ออัปเดตรายการฝาก
-      onClose(); // ปิด Modal
+      onSuccess();
+      onClose();
     } catch (err) {
       console.error('Error adding drink deposit:', err);
       setError(err.message);

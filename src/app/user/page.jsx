@@ -1,8 +1,8 @@
-'use client'; // ต้องเพิ่มบรรทัดนี้สำหรับ Client Component
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation'; // App Router ใช้ 'next/navigation'
+import { useRouter } from 'next/navigation';
 import Sidebar from '../components/sidebar';
 
 const UserPage = () => {
@@ -17,18 +17,10 @@ const UserPage = () => {
     const [targetUid, setTargetUid] = useState(null);
 
     useEffect(() => {
-        // 1. ตรวจสอบสถานะการโหลดและ Session
         if (status === 'loading') {
             return;
         }
 
-        // // 2. ตรวจสอบสิทธิ์การเข้าถึง
-        // if (!session || (session.user.role !== 'Owner' && session.user.role !== 'Admin')) {
-        //   router.push('/');
-        //   return;
-        // }
-
-        // 3. ดึงข้อมูลผู้ใช้เมื่อมีสิทธิ์
         const fetchUsers = async () => {
             try {
                 const response = await fetch('/api/user');
@@ -72,8 +64,8 @@ const UserPage = () => {
             }
 
             alert(`รีเซ็ตรหัสผ่านของ UID: ${uid} สำเร็จ`);
-            setTargetUid(null); // ปิด modal
-            setNewPassword(''); // ล้างรหัสผ่านใหม่
+            setTargetUid(null);
+            setNewPassword('');
         } catch (err) {
             console.error('Error resetting password:', err);
             setError(`ไม่สามารถรีเซ็ตรหัสผ่านได้: ${err.message}`);
