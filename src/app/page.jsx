@@ -1,20 +1,28 @@
 "use client"
 
-import Sidebar from "./components/sidebar";
-import { useSession } from "next-auth/react";
+import React from 'react'
+import { useSession } from 'next-auth/react'
+import { redirect } from 'next/navigation'
+import Sidebar from '../app/components/sidebar'
 
 export default function Home() {
 
   const { data: session } = useSession();
+  console.log(session);
+
+  if (!session) redirect("/login");
 
   return (
-    <main>
-      {/* <Navbar session={session}/> */}
-      <Sidebar session={session}/>
-      <div className="container ml-72 mt-10">
-        <h3> Home Page </h3>
-        <hr className="my-3" />
+    <div>
+      <div>
+        <Sidebar session={session} />
       </div>
-    </main>
-  );
+      <div className='container mx-auto flex-1 p-4 ml-64'>
+        <h3 className='text-3xl my-3'>Welcome {session?.user?.name}!</h3>
+        <hr className='my-3' />
+        <p>Welcome to the Boss POS System!</p>
+      </div>
+    </div>
+  )
+
 }

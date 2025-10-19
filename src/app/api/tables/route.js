@@ -7,7 +7,8 @@ import Table from "../../../../models/Table";
 export async function GET() {
   try {
     await connectMongoDB();
-    const tables = await Table.find().sort({ tableNumber: 1 }); // ดึงทั้งหมดและเรียงตามเบอร์โต๊ะ
+    // **ปรับการเรียง: เรียงตาม zone ก่อน แล้วค่อยเรียงตาม tableNumber**
+    const tables = await Table.find().sort({ zone: 1, tableNumber: 1 });
     return new Response(JSON.stringify(tables), {
       status: 200,
       headers: { "Content-Type": "application/json" },
@@ -28,9 +29,9 @@ export async function GET() {
 export async function POST(req) {
   try {
     await connectMongoDB();
-    const { tableNumber, status, capacity } = await req.json();
+    const { tableNumber, status, capacity, zone } = await req.json();
 
-    if (!tableNumber) {
+    if (!tableNumber || !zone) {
       return new Response(
         JSON.stringify({ message: "Table number is required." }),
         { status: 400, headers: { "Content-Type": "application/json" } }
@@ -38,11 +39,11 @@ export async function POST(req) {
     }
 
     // ตรวจสอบว่า tableNumber ซ้ำหรือไม่
-    const existingTable = await Table.findOne({ tableNumber });
+    const existingTable = await Table.findOne({ zone, tableNumber });
     if (existingTable) {
       return new Response(
         JSON.stringify({
-          message: `Table number ${tableNumber} already exists.`,
+          message: `Table ${zone}${tableNumber} already exists in Zone ${zone}.`,
         }),
         { status: 409, headers: { "Content-Type": "application/json" } }
       );
@@ -50,15 +51,35 @@ export async function POST(req) {
 
     const newTable = await Table.create({
       tableNumber,
-      status: status || "available",
+      status: status || "available", // ใช้ 'available' ตาม Schema ที่ระบุไว้
       capacity: capacity || 4,
+      zone: zone, // NEW: บันทึก zone
     });
     return new Response(
-      JSON.stringify({ message: "Table added successfully", table: newTable }),
+      JSON.stringify({
+        message: `Table ${zone}${tableNumber} added successfully`,
+        table: newTable,
+      }),
       { status: 201, headers: { "Content-Type": "application/json" } }
     );
   } catch (error) {
-    console.error("Error adding table:", error);
+    console.error("SERVER ERROR IN POST /api/tables:", error);
+    let message = "Failed to add table";
+    if (error.code === 11000) {
+      message =
+        "Duplicate key error: Table already exists with that number/zone combination.";
+      return new Response(JSON.stringify({ message }), {
+        status: 409,
+        headers: { "Content-Type": "application/json" },
+      });
+    } else if (error.name === "ValidationError") {
+      // ดึงข้อความ error จาก Mongoose Validation
+      message = Object.values(error.errors)
+        .map((val) => val.message)
+        .join(", ");
+    } else {
+      message = error.message;
+    }
     return new Response(
       JSON.stringify({ message: "Failed to add table", error: error.message }),
       { status: 500, headers: { "Content-Type": "application/json" } }
@@ -71,25 +92,29 @@ export async function POST(req) {
 export async function DELETE(req) {
   try {
     await connectMongoDB();
-    // ถ้าใช้ Pages Router: const { searchParams } = new URL(req.url); const tableNumber = searchParams.get('tableNumber');
-    // ถ้าใช้ App Router: (req.query.tableNumber)
     const url = new URL(req.url);
     const tableNumber = url.searchParams.get("tableNumber");
+    const zone = url.searchParams.get("zone"); // NEW: ดึง zone
 
-    if (!tableNumber) {
+    if (!tableNumber || !zone) {
+      // NEW: ตรวจสอบ zone
       return new Response(
-        JSON.stringify({ message: "Table number is required for deletion." }),
+        JSON.stringify({
+          message: "Table number and zone are required for deletion.",
+        }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
 
+    // FIX: ค้นหาโดยใช้ทั้ง tableNumber และ zone
     const deletedTable = await Table.findOneAndDelete({
       tableNumber: Number(tableNumber),
+      zone: zone,
     });
 
     if (!deletedTable) {
       return new Response(
-        JSON.stringify({ message: `Table number ${tableNumber} not found.` }),
+        JSON.stringify({ message: `Table ${zone}${tableNumber} not found.` }),
         { status: 404, headers: { "Content-Type": "application/json" } }
       );
     }

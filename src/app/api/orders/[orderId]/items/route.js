@@ -4,8 +4,8 @@ import { connectMongoDB } from '../../../../../../lib/mongodb';
 import Order from '../../../../../../models/Order';
 import MenuItem from '../../../../../../models/MenuItem';
 
-export async function POST(request, context) {
-  const { orderId } = context.params;
+export async function POST(request, { params }) {
+  const { orderId } = await params;
   const { menuItemId, name, price, quantity } = await request.json();
 
   try {
@@ -34,20 +34,23 @@ export async function POST(request, context) {
 
     const existingItemIndex = order.items.findIndex(item => String(item.menuItemId) === String(menuItemId));
 
+    const newSubtotal = price * quantity
+
     if (existingItemIndex > -1) {
       order.items[existingItemIndex].quantity += quantity;
       order.items[existingItemIndex].subtotal = order.items[existingItemIndex].quantity * order.items[existingItemIndex].price; // ใช้ subtotal
     } else {
       order.items.push({
-        menuItemId: menuItemId,
-        name: name,
+        item_id: menuItemId,
+        item_name: name,
         price: price,
         quantity: quantity,
-        subtotal: price * quantity,
+        subtotal: newSubtotal,
+        item_type: 'MenuItem'
       });
     }
 
-    order.totalAmount = order.items.reduce((sum, item) => sum + item.subtotal, 0);
+    order.total_amount = order.items.reduce((sum, item) => sum + item.subtotal, 0);
 
     const updatedOrder = await order.save();
 

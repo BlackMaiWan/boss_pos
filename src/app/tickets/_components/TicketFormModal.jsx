@@ -22,10 +22,21 @@ const TicketFormModal = ({ onClose, onSuccess }) => {
         setError(null);
 
         try {
+            const sanitizedData = {
+                ...formData,
+                ticket_price: parseFloat(formData.ticket_price),
+                quantity: parseInt(formData.quantity, 10),
+            };
+
+            // หากมีการระบุ concert_date ค่อยแปลงค่า
+            if (sanitizedData.concert_date) {
+                sanitizedData.concert_date = new Date(sanitizedData.concert_date).toISOString();
+            }
+
             const response = await fetch('/api/tickets', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData),
+                body: JSON.stringify(sanitizedData),
             });
 
             if (!response.ok) {
@@ -34,8 +45,8 @@ const TicketFormModal = ({ onClose, onSuccess }) => {
             }
 
             alert('เพิ่มตั๋วสำเร็จ');
-            onSuccess(); // ดึงข้อมูลตั๋วใหม่
-            onClose(); // ปิด Modal
+            onSuccess();
+            onClose();
         } catch (err) {
             console.error('Error adding ticket:', err);
             setError(err.message);
@@ -45,9 +56,9 @@ const TicketFormModal = ({ onClose, onSuccess }) => {
     };
 
     return (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center">
-            <div className="bg-white p-6 rounded-lg shadow-xl w-96">
-                <h3 className="text-lg font-bold mb-4">เพิ่มตั๋วคอนเสิร์ตใหม่</h3>
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
+            <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-lg">
+                <h2 className="text-2xl font-bold mb-4">เพิ่มตั๋วคอนเสิร์ต</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="mb-4">
                         <label className="block text-gray-700">ชื่อคอนเสิร์ต</label>

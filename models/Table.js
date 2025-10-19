@@ -5,7 +5,6 @@ const tableSchema = new Schema(
     tableNumber: {
       type: Number,
       required: true,
-      unique: true,
     },
     status: {
       type: String,
@@ -21,9 +20,21 @@ const tableSchema = new Schema(
       ref: "Order",
       default: null,
     },
+    capacity: {
+      type: Number,
+      default: 4,
+    },
+    zone: {
+      type: String,
+      required: true,
+      trim: true,
+      default: "A", // ค่าเริ่มต้น
+    },
   },
   { timestamps: true }
 );
+
+tableSchema.index({ zone: 1, tableNumber: 1 }, { unique: true });
 
 const Table = models.Table || model("Table", tableSchema);
 

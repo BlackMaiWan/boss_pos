@@ -4,7 +4,6 @@ import React, { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { redirect } from 'next/navigation';
 import { useSession } from 'next-auth/react'
-import Sidebar from '../components/sidebar'
 
 function LoginPage() {
 
@@ -14,7 +13,7 @@ function LoginPage() {
 
 
     const { data: session } = useSession();
-    if (session) redirect("/welcome")
+    if (session) redirect("/tables")
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -29,37 +28,65 @@ function LoginPage() {
                 return;
             }
 
-            redirect("/welcome")
+            redirect("/tables")
         } catch (error) {
             console.log(error)
         }
     }
 
     return (
-        <div>
-            <div>
-                <Sidebar />
-            </div>
-            <div className='ml-64'>
-                <div className='container mx-auto py-10 justify-items-center'>
-                    <h1>Login</h1>
-                    <hr className='my-3' />
-                    <form onSubmit={handleSubmit}>
+        <div className="min-h-screen flex items-center justify-center bg-gray-100">
 
-                        {error && (
-                            <div className='bg-red-500 w-fit text-sm text-white py-1 px-3 rounded-md mt-2'>
-                                {error}
-                            </div>
-                        )}
+            {/* 2. กล่อง Login Card */}
+            <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-sm">
 
-                        <input onChange={(e) => setUID(e.target.value)} className='block bg-gray-300 p-2 my-2 rounded-md' type="text" placeholder='UID' />
-                        <input onChange={(e) => setPassword(e.target.value)} className='block bg-gray-300 p-2 my-2 rounded-md' type="password" placeholder='Password' />
-                        <button type='submit' className='bg-green-500 p-2 m-3 rounded-md text-white'>Sign In</button>
-                    </form>
-                    {/* need config!!! */}
-                    {/* <Link className='text-gray-500 hover:underline' href="/">Forgot Password?</Link><br/>
-                    <Link className='text-gray-500 hover:underline' href="register">Register</Link> */}
-                </div>
+                {/* 3. Header/Title */}
+                <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">Login</h2>
+
+                {/* 4. Form/Inputs */}
+                <form
+                    onSubmit={handleSubmit} // ใส่ฟังก์ชัน handleSubmit ของคุณ
+                    className="space-y-4"
+                >
+                    <div>
+                        <label htmlFor="uid" className="block text-sm font-medium text-gray-700">UID</label>
+                        <input
+                            type="text"
+                            id="uid"
+                            placeholder="UID"
+                            value={uid} // ใส่ value และ onChange ของคุณ
+                            onChange={(e) => setUID(e.target.value)} 
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+                        <input
+                            type="password"
+                            id="password"
+                            placeholder="Password"
+                            value={password} // ใส่ value และ onChange ของคุณ
+                            onChange={(e) => setPassword(e.target.value)} 
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+                        />
+                    </div>
+
+                    <button
+                        type="submit"
+                        className="w-full bg-black hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50"
+                    >
+                        Sign In
+                    </button>
+                </form>
+
+                {/* 5. Link ไปหน้า Register (ถ้ามี) */}
+                <p className="mt-6 text-center text-sm text-gray-600">
+                    ยังไม่มีบัญชี?{' '}
+                    <a href="/register" className="font-medium text-green-600 hover:text-green-500">
+                        Sign Up
+                    </a>
+                </p>
+
             </div>
         </div>
     )
