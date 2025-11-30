@@ -88,7 +88,7 @@ const CustomersPage = () => {
     return (
         <main>
             <Sidebar session={session} />
-            <div className="container mx-auto p-4">
+            <div className="main_container">
                 <h1 className="text-2xl font-bold mb-4">ข้อมูลลูกค้า</h1>
                 <div className="flex justify-between mb-4">
                     <button
